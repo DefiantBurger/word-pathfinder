@@ -81,7 +81,7 @@ def init_word_list() -> set[str]:
 one_off_cache: dict[str, set[str]] = {}
 
 
-@profile
+# @profile
 def get_one_off_words(words: set[Word]) -> set[str]:
 	one_off_words = set()
 	for word in words:
@@ -143,6 +143,41 @@ def find_paths_between_words(start_word: str, end_word: str) -> list[list[str]]:
 
 	return all_paths
 
+def find_longest_path_from_word(start_word: str) -> list[Word]:
+	longest_path: list[Word] = []
+	longest_path_length: int = 0
+	for i, word in enumerate(word_list):
+	    paths = find_paths_between_words(start_word, word)
+	    if not paths:
+	        continue
+	    length = len(paths[0])
+	    if length > longest_path_length:
+	        longest_path = paths[0]
+	        longest_path_length = length
+	
+	return longest_path
+
+
+def find_longest_path() -> list[Word]:
+	longest_path: list[Word] = []
+	longest_path_length: int = 0
+	for i, start_word in enumerate(word_list):
+		for k, end_word in enumerate(word_list):
+			paths = find_paths_between_words(start_word, end_word)
+			if not paths:
+				continue
+			length = len(paths[0])
+			if length > longest_path_length:
+				longest_path = paths[0]
+				longest_path_length = length
+
+				index = i * len(word_list) + k
+				print(
+					f"{index=} {', '.join(str(w) for w in longest_path)} = {longest_path_length}"
+				)
+
+	return longest_path
+
 
 def get_islands():
 	islands: list[set] = [{Word("a")}]
@@ -175,67 +210,11 @@ def main():
 	# paths = find_paths_between_words("fleeting", "shallows")
 	# print(paths[0], len(paths[0]))
 
-	# longest_path: list[str] = []
-	# longest_path_length: int = 0
-	# for i, word in enumerate(word_list):
-	#     paths = find_paths_between_words("flexing", word)
-	#     if not paths:
-	#         continue
-	#     length = len(paths[0])
-	#     if length > longest_path_length:
-	#         longest_path = paths[0]
-	#         longest_path_length = length
+	# longest_path = find_longest_path_from_word("cats")
+	# print(f"{', '.join(str(w) for w in longest_path)} = {len(longest_path)}")
 
-	#         print(f"{i=} {', '.join(str(w) for w in longest_path)} = {longest_path_length}")
-
-	# longest_path: list[str] = []
-	# longest_path_length: int = 0
-	# start_end_combos = list(product(word_list, word_list))
-	# shuffle(start_end_combos)
-	# for i, (start_word, end_word) in enumerate(start_end_combos):
-	#     paths = find_paths_between_words(start_word, end_word)
-	#     if not paths:
-	#         continue
-	#     length = len(paths[0])
-	#     if length > longest_path_length:
-	#         longest_path = paths[0]
-	#         longest_path_length = length
-
-	#         print(f"{i=} {', '.join(str(w) for w in longest_path)} = {longest_path_length}")
-
-	longest_path: list[str] = []
-	longest_path_length: int = 0
-	for i, start_word in enumerate(word_list):
-		for k, end_word in enumerate(word_list):
-			paths = find_paths_between_words(start_word, end_word)
-			if not paths:
-				continue
-			length = len(paths[0])
-			if length > longest_path_length:
-				longest_path = paths[0]
-				longest_path_length = length
-
-				index = i * len(word_list) + k
-				print(
-					f"{index=} {', '.join(str(w) for w in longest_path)} = {longest_path_length}"
-				)
-
-	# longest_path: list[str] = []
-	# longest_path_length: int = 0
-	# word_list_list = list(word_list)
-	# word_list_length = len(word_list)
-	# while True:
-	#     start_word = word_list_list[randint(0, word_list_length - 1)]
-	#     end_word = word_list_list[randint(0, word_list_length - 1)]
-	#     paths = find_paths_between_words(start_word, end_word)
-	#     if not paths:
-	#         continue
-	#     length = len(paths[0])
-	#     if length > longest_path_length:
-	#         longest_path = paths[0]
-	#         longest_path_length = length
-
-	#         print(f"{', '.join(str(w) for w in longest_path)}\n = {longest_path_length}\n")
+	longest_path = find_longest_path()
+	print(f"{', '.join(str(w) for w in longest_path)} = {len(longest_path)}")
 
 	# islands = get_islands()
 	# sorted_islands = sorted(islands, key=lambda island: len(island), reverse=True)
