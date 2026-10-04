@@ -234,6 +234,9 @@ def main():
 
 	print(f"{', '.join(str(w) for w in longest_path)} = {len(longest_path)}")
 
+	with open("longest_path.txt", "w") as fp:
+		fp.write(f"{', '.join(str(w) for w in longest_path)} = {len(longest_path)}\n")
+
 	# islands = get_islands()
 	# sorted_islands = sorted(islands, key=lambda island: len(island), reverse=True)
 	# for i in range(20):
