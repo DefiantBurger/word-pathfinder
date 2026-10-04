@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import os
-from itertools import product
-from random import randint, shuffle
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from string import ascii_lowercase
 
 from line_profiler import profile
@@ -147,22 +146,23 @@ def find_longest_path_from_word(start_word: str) -> list[Word]:
 	longest_path: list[Word] = []
 	longest_path_length: int = 0
 	for i, word in enumerate(word_list):
-	    paths = find_paths_between_words(start_word, word)
-	    if not paths:
-	        continue
-	    length = len(paths[0])
-	    if length > longest_path_length:
-	        longest_path = paths[0]
-	        longest_path_length = length
+		paths = find_paths_between_words(start_word, word)
+		if not paths:
+			continue
+		length = len(paths[0])
+		if length > longest_path_length:
+			longest_path = paths[0]
+			longest_path_length = length
 	
 	return longest_path
 
 
-def find_longest_path() -> list[Word]:
+def find_longest_path(starting_index=None, ending_index=None) -> list[Word]:
 	longest_path: list[Word] = []
 	longest_path_length: int = 0
-	for i, start_word in enumerate(word_list):
-		for k, end_word in enumerate(word_list):
+	word_list_list = list(word_list)
+	for i, start_word in enumerate(word_list_list[starting_index:ending_index]):
+		for k, end_word in enumerate(word_list_list):
 			paths = find_paths_between_words(start_word, end_word)
 			if not paths:
 				continue
@@ -172,9 +172,9 @@ def find_longest_path() -> list[Word]:
 				longest_path_length = length
 
 				index = i * len(word_list) + k
-				print(
-					f"{index=} {', '.join(str(w) for w in longest_path)} = {longest_path_length}"
-				)
+				# print(
+				# 	f"{index=} {', '.join(str(w) for w in longest_path)} = {longest_path_length}"
+				# )
 
 	return longest_path
 
@@ -213,7 +213,25 @@ def main():
 	# longest_path = find_longest_path_from_word("cats")
 	# print(f"{', '.join(str(w) for w in longest_path)} = {len(longest_path)}")
 
-	longest_path = find_longest_path()
+	longest_path: list[Word] = []
+	longest_path_length = 0
+	with ProcessPoolExecutor(max_workers=8) as executor:
+		futures = [
+			executor.submit(find_longest_path, i, i+100) 
+			for i in range(0, len(word_list), 100)
+		]
+		
+		# as_completed yields futures as soon as they finish processing
+		for future in as_completed(futures):
+			try:
+				this_longest_path = future.result()
+				print(f"[SUCCESS] {len(this_longest_path)} {this_longest_path}")
+				if len(this_longest_path) > longest_path_length:
+					longest_path = this_longest_path
+					longest_path_length = len(this_longest_path)
+			except Exception as e:
+				print(f"[ERROR] Future generated an exception: {e}")
+
 	print(f"{', '.join(str(w) for w in longest_path)} = {len(longest_path)}")
 
 	# islands = get_islands()
