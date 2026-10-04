@@ -171,7 +171,7 @@ def find_longest_path(starting_index=None, ending_index=None) -> list[Word]:
 				longest_path = paths[0]
 				longest_path_length = length
 
-				index = i * len(word_list) + k
+				# index = i * len(word_list) + k
 				# print(
 				# 	f"{index=} {', '.join(str(w) for w in longest_path)} = {longest_path_length}"
 				# )
@@ -215,7 +215,11 @@ def main():
 
 	longest_path: list[Word] = []
 	longest_path_length = 0
-	with ProcessPoolExecutor(max_workers=8) as executor:
+	executor = ProcessPoolExecutor(
+		max_workers=8,
+		initializer=init_word_list,
+	)
+	try:
 		futures = [
 			executor.submit(find_longest_path, i, i+100) 
 			for i in range(0, len(word_list), 100)
@@ -231,6 +235,18 @@ def main():
 					longest_path_length = len(this_longest_path)
 			except Exception as e:
 				print(f"[ERROR] Future generated an exception: {e}")
+	except KeyboardInterrupt:
+		print("\nStopping search...")
+		for future in futures:
+			future.cancel()
+		if hasattr(executor, "terminate_workers"):
+			executor.terminate_workers()
+		else:
+			for process in executor._processes.values():
+				process.terminate()
+			executor.shutdown(wait=False, cancel_futures=True)
+	else:
+		executor.shutdown(wait=True)
 
 	print(f"{', '.join(str(w) for w in longest_path)} = {len(longest_path)}")
 
