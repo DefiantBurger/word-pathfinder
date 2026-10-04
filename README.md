@@ -1,0 +1,1 @@
+removed_words.txt isn't included in this repo but can be found at: https://github.com/dsojevic/profanity-list/blob/main/en.txt
